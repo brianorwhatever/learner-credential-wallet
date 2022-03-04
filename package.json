@@ -6,6 +6,7 @@
     "start": "react-native start",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
+    "brian": "react-native run-ios --device \"Aviary iPhone\" --verbose",
     "web": "expo start --web",
     "eject": "expo eject",
     "lint": "eslint --max-warnings 0 ./app ./App.tsx && tsc --noEmit",

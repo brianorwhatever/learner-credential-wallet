@@ -2,10 +2,11 @@ require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/react-native-unimodules/cocoapods.rb'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '12.0'
+platform :ios, '15.0'
 
 target 'eduWallet' do
   use_unimodules!
+  use_modular_headers!
   config = use_native_modules!
 
   use_react_native!(:path => config["reactNativePath"])
@@ -13,7 +14,9 @@ target 'eduWallet' do
   # For React Native Camera
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
-
+  
+  pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec', :modular_headers => false
+  pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec', :modular_headers => false
   # Uncomment to opt-in to using Flipper
   #
   # if !ENV['CI']
@@ -22,6 +25,9 @@ target 'eduWallet' do
   #     flipper_post_install(installer)
   #   end
   # end
-
-
+  # post_install do |installer|
+  #   installer.pods_project.build_configurations.each do |config|
+  #     config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+  #   end
+  # end
 end
