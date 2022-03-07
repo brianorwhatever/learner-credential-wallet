@@ -1,20 +1,23 @@
-import { authorize } from 'react-native-app-auth';
+import { authorize } from "react-native-app-auth";
 
-import { Credential } from '../types/credential';
-import { DidRecordRaw } from '../model';
+import { Credential } from "../types/credential";
+import { DidRecordRaw } from "../model";
 
-import { createVerifiablePresentation } from './present';
-import { verifyCredential } from './validate';
-import { registries } from './registry';
+import { createVerifiablePresentation } from "./present";
+import { verifyCredential } from "./validate";
+import { registries } from "./registry";
 
 export type CredentialRequestParams = {
   auth_type?: string;
   issuer: string;
   vc_request_url: string;
   challenge?: string;
-}
+};
 
-export async function requestCredential(credentialRequestParams: CredentialRequestParams, didRecord: DidRecordRaw): Promise<Credential> {
+export async function requestCredential(
+  credentialRequestParams: CredentialRequestParams,
+  didRecord: DidRecordRaw
+): Promise<Credential> {
   const {
     // auth_type,
     issuer,
@@ -22,37 +25,41 @@ export async function requestCredential(credentialRequestParams: CredentialReque
     challenge,
   } = credentialRequestParams;
 
-  console.log('Credential request params', credentialRequestParams);
+  console.log("Credential request params", credentialRequestParams);
 
-  if (!registries.issuerAuth.isInRegistry(issuer)) {
-    throw new Error(`Unknown issuer: "${issuer}"`);
-  }
+  // if (!registries.issuerAuth.isInRegistry(issuer)) {
+  //   throw new Error(`Unknown issuer: "${issuer}"`);
+  // }
 
-  const config = registries.issuerAuth.entryFor(issuer);
+  // const config = registries.issuerAuth.entryFor(issuer);
 
   /**
    * There needs to be a delay before authenticating or the app errors out.
    */
   await new Promise((res) => setTimeout(res, 1000));
 
-  console.log('Launching OIDC auth:', config);
+  // console.log('Launching OIDC auth:', config);
 
-  const { accessToken } = await authorize(config).catch((err) => {
-    console.error(err);
-    throw Error('Unable to receive credential: Authorization with the issuer failed');
-  });
+  // const { accessToken } = await authorize(config).catch((err) => {
+  //   console.error(err);
+  //   throw Error('Unable to receive credential: Authorization with the issuer failed');
+  // });
 
-  console.log('Received access token, requesting credential.');
+  console.log("Faked access token, requesting credential.");
 
-  const requestBody = await createVerifiablePresentation(undefined, didRecord, challenge);
+  const requestBody = await createVerifiablePresentation(
+    undefined,
+    didRecord,
+    challenge
+  );
 
   console.log(JSON.stringify(requestBody, null, 2));
 
   const request = {
-    method: 'POST',
+    method: "POST",
     headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
+      // Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(requestBody),
   };
@@ -60,17 +67,21 @@ export async function requestCredential(credentialRequestParams: CredentialReque
   const response = await fetch(vc_request_url, request);
 
   if (!response.ok) {
-    console.error(`Issuer response (failed): ${JSON.stringify(response, null, 2)}`);
-    throw Error('Unable to receive credential: The issuer failed to return a valid response');
+    console.error(
+      `Issuer response (failed): ${JSON.stringify(response, null, 2)}`
+    );
+    throw Error(
+      "Unable to receive credential: The issuer failed to return a valid response"
+    );
   }
 
-  const responseJson  = await response.json();
+  const responseJson = await response.json();
   const credential = responseJson as Credential;
 
   try {
     const verified = await verifyCredential(credential);
     if (!verified) {
-      throw new Error('Credential was received, but could not be verified');
+      throw new Error("Credential was received, but could not be verified");
     }
   } catch (err) {
     console.warn(err);
